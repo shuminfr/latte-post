@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f6efe6">
+<title>Latte &amp; Lines · 發片</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6efe6;
+    --paper: #fffaf3;
+    --milk: #efe3d3;
+    --espresso: #3b2a20;
+    --coffee: #6b4a36;
+    --crema: #c58b5b;
+    --muted: #8a7566;
+    --line: #e4d6c4;
+    --ok: #4f7a52;
+    --bad: #b2463b;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100dvh;
+    background: var(--cream);
+    color: var(--espresso);
+    font: 16px/1.5 "Noto Sans TC", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: max(20px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+  }
+  main { max-width: 460px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 18px; }
+  h1 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 28px;
+    letter-spacing: -0.01em; margin: 0; line-height: 1.1;
+  }
+  h1 small { display: block; font: 500 13px/1.4 "Noto Sans TC", sans-serif; color: var(--muted); letter-spacing: 0.02em; margin-top: 4px; }
+  .platforms { display: flex; gap: 6px; }
+  .chip {
+    font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
+    background: var(--milk); color: var(--coffee);
+  }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; margin-bottom: 14px;
+    box-shadow: 0 1px 0 rgba(59, 42, 32, 0.04), 0 8px 24px -16px rgba(59, 42, 32, 0.25);
+  }
+  label.field { display: block; font-weight: 500; font-size: 14px; margin-bottom: 8px; color: var(--coffee); }
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  input[type="password"], input[type="text"], textarea {
+    width: 100%; font: inherit; color: inherit; background: #fff;
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none; appearance: none;
+  }
+  input:focus, textarea:focus { border-color: var(--crema); box-shadow: 0 0 0 3px rgba(197, 139, 91, 0.18); }
+  textarea { min-height: 150px; resize: vertical; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); margin-top: 10px; }
+  .check input { width: 18px; height: 18px; accent-color: var(--coffee); }
+
+  .drop {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; min-height: 150px; border: 1.5px dashed var(--crema); border-radius: 14px;
+    background: repeating-linear-gradient(135deg, #fffaf3 0 12px, #fbf3e8 12px 24px);
+    color: var(--coffee); text-align: center; cursor: pointer; padding: 16px;
+  }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop .big { font-family: "Fraunces", Georgia, serif; font-size: 20px; font-weight: 500; }
+  .preview { display: none; gap: 14px; align-items: flex-start; }
+  .preview.show { display: flex; }
+  .preview video {
+    width: 96px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 10px; background: var(--milk);
+    flex-shrink: 0;
+  }
+  .meta { flex: 1; min-width: 0; font-size: 14px; }
+  .meta .name { font-weight: 500; overflow-wrap: anywhere; }
+  .meta .size { color: var(--muted); font-size: 13px; margin: 2px 0 10px; }
+  .meta .size.bad { color: var(--bad); font-weight: 500; }
+  .linkbtn {
+    background: none; border: 0; padding: 0; font: inherit; font-size: 13.5px;
+    color: var(--coffee); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+  }
+  .count { text-align: right; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  details summary { cursor: pointer; font-size: 14px; color: var(--coffee); font-weight: 500; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: "＋ "; }
+  details[open] summary::before { content: "－ "; }
+  details .inner { margin-top: 10px; }
+
+  .send {
+    width: 100%; border: 0; border-radius: 16px; padding: 17px 18px; margin-top: 4px;
+    font: 700 17px/1 "Noto Sans TC", sans-serif; letter-spacing: 0.04em;
+    background: var(--espresso); color: var(--cream); cursor: pointer;
+    transition: transform .08s, opacity .15s;
+  }
+  .send:active { transform: scale(0.985); }
+  .send:disabled { opacity: 0.45; cursor: default; }
+
+  .status { display: none; }
+  .status.show { display: block; }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .steps li { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 15px; color: var(--muted); }
+  .steps li.active, .steps li.done, .steps li.fail { color: var(--espresso); }
+  .dot {
+    width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); flex-shrink: 0;
+    display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff;
+  }
+  li.active .dot { border-color: var(--crema); border-top-color: transparent; animation: spin .8s linear infinite; }
+  li.done .dot { background: var(--ok); border-color: var(--ok); }
+  li.fail .dot { background: var(--bad); border-color: var(--bad); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .bar { height: 6px; background: var(--milk); border-radius: 99px; overflow: hidden; margin: 2px 0 6px 32px; display: none; }
+  .bar.show { display: block; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--crema); transition: width .2s; }
+  .result { margin-top: 10px; font-size: 14px; }
+  .result p { margin: 6px 0; }
+  .result .err { color: var(--bad); }
+  .msg { font-size: 14px; color: var(--bad); margin-top: 8px; min-height: 1em; }
+  .foot { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 18px; }
+  .foot a { color: var(--coffee); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Latte &amp; Lines<small>發片小幫手 · 一鍵同步</small></h1>
+    <div class="platforms"><span class="chip">TikTok</span><span class="chip">Shorts</span></div>
+  </header>
+
+  <!-- Passcode -->
+  <section class="card" id="lockCard">
+    <label class="field" for="passcode">通關密碼</label>
+    <input id="passcode" type="password" autocomplete="current-password" placeholder="輸入你設定的密碼">
+    <label class="check"><input type="checkbox" id="remember" checked>在這支手機記住密碼</label>
+    <div class="msg" id="lockMsg"></div>
+  </section>
+
+  <form id="form" novalidate>
+    <!-- Video -->
+    <section class="card">
+      <label class="field">影片</label>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="video/mp4,video/quicktime,.mp4,.mov">
+        <span class="big">選一支影片</span>
+        <span class="hint">mp4 或 mov，50MB 以內</span>
+      </label>
+      <div class="preview" id="preview">
+        <video id="vid" muted playsinline preload="metadata"></video>
+        <div class="meta">
+          <div class="name" id="fname"></div>
+          <div class="size" id="fsize"></div>
+          <button type="button" class="linkbtn" id="change">換一支</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Caption -->
+    <section class="card">
+      <label class="field" for="caption">Caption</label>
+      <textarea id="caption" maxlength="2200" placeholder="貼上你在 IG 用的 caption，hashtag 也一起"></textarea>
+      <div class="count"><span id="ccount">0</span> / 2200</div>
+      <details>
+        <summary>YouTube 標題（選填）</summary>
+        <div class="inner">
+          <input id="ytitle" type="text" maxlength="100" placeholder="不填就用 caption 第一行">
+          <div class="hint">最多 100 字，hashtag 會自動拿掉</div>
+        </div>
+      </details>
+    </section>
+
+    <button class="send" id="send" type="submit" disabled>發到 TikTok + YouTube</button>
+    <div class="msg" id="formMsg"></div>
+  </form>
+
+  <!-- Progress -->
+  <section class="card status" id="status">
+    <ul class="steps">
+      <li id="s1"><span class="dot"></span>準備上傳</li>
+      <li id="s2"><span class="dot"></span><span>上傳影片 <span id="pct"></span></span></li>
+      <div class="bar" id="bar"><i id="barFill"></i></div>
+      <li id="s3"><span class="dot"></span>發到 TikTok + YouTube</li>
+    </ul>
+    <div class="result" id="result"></div>
+    <button type="button" class="send hidden" id="again">再發一支</button>
+  </section>
+
+  <p class="foot">影片上傳兩天後會自動刪除 · <a href="https://publish.buffer.com" target="_blank" rel="noopener">打開 Buffer</a></p>
+</main>
+
+<script>
+(() => {
+  const FUNCTION_URL = "https://jlegrefbnyyjadrewglv.supabase.co/functions/v1/post-video";
+  const PUBLISHABLE_KEY = "sb_publishable_WlNwIgbqJZrfJoEuo7-Alg_hWac_F-u";
+  const MAX_BYTES = 50 * 1024 * 1024;
+  const STORE_KEY = "ll-post-passcode";
+
+  const $ = (id) => document.getElementById(id);
+  const passEl = $("passcode"), remember = $("remember"), fileEl = $("file");
+  const captionEl = $("caption"), titleEl = $("ytitle"), sendBtn = $("send");
+  let file = null, previewUrl = null;
+
+  // Remembered passcode (best effort)
+  try {
+    const saved = localStorage.getItem(STORE_KEY);
+    if (saved) passEl.value = saved;
+  } catch (_) {}
+
+  function fmtSize(b) {
+    return b >= 1024 * 1024 ? (b / 1024 / 1024).toFixed(1) + " MB" : Math.round(b / 1024) + " KB";
+  }
+
+  function refresh() {
+    const okFile = file && file.size <= MAX_BYTES;
+    sendBtn.disabled = !(okFile && captionEl.value.trim() && passEl.value.trim());
+  }
+
+  fileEl.addEventListener("change", () => {
+    file = fileEl.files[0] || null;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (!file) { $("preview").classList.remove("show"); $("drop").classList.remove("hidden"); refresh(); return; }
+    previewUrl = URL.createObjectURL(file);
+    $("vid").src = previewUrl + "#t=0.5";
+    $("fname").textContent = file.name;
+    const tooBig = file.size > MAX_BYTES;
+    $("fsize").textContent = tooBig ? fmtSize(file.size) + "：超過 50MB，請先壓縮" : fmtSize(file.size);
+    $("fsize").classList.toggle("bad", tooBig);
+    $("preview").classList.add("show");
+    $("drop").classList.add("hidden");
+    refresh();
+  });
+  $("change").addEventListener("click", () => fileEl.click());
+  captionEl.addEventListener("input", () => { $("ccount").textContent = captionEl.value.length; refresh(); });
+  passEl.addEventListener("input", () => { $("lockMsg").textContent = ""; refresh(); });
+
+  async function call(payload) {
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: PUBLISHABLE_KEY },
+      body: JSON.stringify({ passcode: passEl.value.trim(), ...payload }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) throw Object.assign(new Error("密碼不對"), { code: "pass" });
+    if (!res.ok) throw new Error(data.error || "伺服器錯誤 " + res.status);
+    return data;
+  }
+
+  function upload(signedUrl, f) {
+    return new Promise((resolve, reject) => {
+      const body = new FormData();
+      body.append("cacheControl", "3600");
+      body.append("", f);
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", signedUrl);
+      xhr.setRequestHeader("apikey", PUBLISHABLE_KEY);
+      xhr.setRequestHeader("x-upsert", "false");
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        const p = Math.round((e.loaded / e.total) * 100);
+        $("pct").textContent = p + "%";
+        $("barFill").style.width = p + "%";
+      };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300)
+        ? resolve()
+        : reject(new Error("上傳失敗（" + xhr.status + "）" + (xhr.responseText || "").slice(0, 120)));
+      xhr.onerror = () => reject(new Error("網路中斷，上傳失敗"));
+      xhr.send(body);
+    });
+  }
+
+  function step(id, state) {
+    const li = $(id);
+    li.className = state;
+    li.querySelector(".dot").textContent = state === "done" ? "✓" : state === "fail" ? "!" : "";
+  }
+
+  function line(text, isErr) {
+    const p = document.createElement("p");
+    p.textContent = text;
+    if (isErr) p.className = "err";
+    $("result").appendChild(p);
+  }
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (sendBtn.disabled) return;
+    $("formMsg").textContent = "";
+    try { remember.checked ? localStorage.setItem(STORE_KEY, passEl.value.trim()) : localStorage.removeItem(STORE_KEY); } catch (_) {}
+
+    $("form").classList.add("hidden");
+    $("lockCard").classList.add("hidden");
+    $("status").classList.add("show");
+    $("result").innerHTML = "";
+    $("again").classList.add("hidden");
+    ["s1", "s2", "s3"].forEach((s) => step(s, ""));
+    $("pct").textContent = ""; $("barFill").style.width = "0";
+
+    let current = "s1";
+    try {
+      step("s1", "active");
+      const ext = /\.mov$/i.test(file.name) || file.type === "video/quicktime" ? "mov" : "mp4";
+      const signed = await call({ action: "sign", ext });
+      step("s1", "done");
+
+      current = "s2"; step("s2", "active"); $("bar").classList.add("show");
+      await upload(signed.signedUrl, file);
+      step("s2", "done"); $("bar").classList.remove("show");
+
+      current = "s3"; step("s3", "active");
+      const r = await call({
+        action: "publish",
+        path: signed.path,
+        caption: captionEl.value.trim(),
+        title: titleEl.value.trim(),
+      });
+      const allOk = r.tiktok?.ok && r.youtube?.ok;
+      step("s3", allOk ? "done" : "fail");
+      line(r.tiktok?.ok ? "TikTok：已送出 ✓" : "TikTok：失敗，" + (r.tiktok?.error || "原因不明"), !r.tiktok?.ok);
+      line(r.youtube?.ok ? "YouTube Shorts：已送出 ✓" : "YouTube：失敗，" + (r.youtube?.error || "原因不明"), !r.youtube?.ok);
+      line("幾分鐘內就會出現在你的帳號上。");
+      if (allOk) { captionEl.value = ""; titleEl.value = ""; $("ccount").textContent = "0"; }
+    } catch (err) {
+      step(current, "fail");
+      $("bar").classList.remove("show");
+      line(err.message || String(err), true);
+      if (err.code === "pass") {
+        $("lockCard").classList.remove("hidden");
+        $("lockMsg").textContent = "密碼不對，再試一次";
+        try { localStorage.removeItem(STORE_KEY); } catch (_) {}
+      }
+    }
+    $("again").classList.remove("hidden");
+  });
+
+  $("again").addEventListener("click", () => {
+    $("status").classList.remove("show");
+    $("form").classList.remove("hidden");
+    $("lockCard").classList.remove("hidden");
+    if (!captionEl.value) {
+      file = null; fileEl.value = "";
+      $("preview").classList.remove("show"); $("drop").classList.remove("hidden");
+    }
+    refresh();
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
