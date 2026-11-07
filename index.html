@@ -329,7 +329,10 @@
       step("s3", allOk ? "done" : "fail");
       line(r.tiktok?.ok ? "TikTok：已送出 ✓" : "TikTok：失敗，" + (r.tiktok?.error || "原因不明"), !r.tiktok?.ok);
       line(r.youtube?.ok ? "YouTube Shorts：已送出 ✓" : "YouTube：失敗，" + (r.youtube?.error || "原因不明"), !r.youtube?.ok);
-      line("幾分鐘內就會出現在你的帳號上。");
+      if (r.tiktok?.ok || r.youtube?.ok) line("幾分鐘內就會出現在你的帳號上。");
+      if (/token/i.test((r.tiktok?.error || "") + (r.youtube?.error || ""))) {
+        line("Buffer 密鑰不對：請到 Buffer 重新產生一組，貼進 Supabase 的 BUFFER_API_KEY。", true);
+      }
       if (allOk) { captionEl.value = ""; titleEl.value = ""; $("ccount").textContent = "0"; }
     } catch (err) {
       step(current, "fail");
