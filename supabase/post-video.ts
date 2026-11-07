@@ -7,7 +7,7 @@
 //   POST_PASSCODE   - the passcode typed on the phone page
 //   BUFFER_API_KEY  - from https://publish.buffer.com/settings/api
 // Auto-provided by Supabase: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-// JWT verification must be OFF for this function (the passcode protects it).
+// JWT verification stays ON: the page sends the public anon key; the passcode is checked here.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -38,10 +38,18 @@ function sameString(a: string, b: string) {
   return diff === 0;
 }
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-);
+function serviceKey() {
+  const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (legacy) return legacy;
+  try {
+    const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");
+    return keys.default || Object.values(keys)[0] || "";
+  } catch {
+    return "";
+  }
+}
+
+const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey() as string);
 
 async function cleanup() {
   const { data, error } = await supabase.storage.from(BUCKET).list("", {

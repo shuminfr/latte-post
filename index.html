@@ -196,7 +196,9 @@
 <script>
 (() => {
   const FUNCTION_URL = "https://jlegrefbnyyjadrewglv.supabase.co/functions/v1/post-video";
-  const PUBLISHABLE_KEY = "sb_publishable_WlNwIgbqJZrfJoEuo7-Alg_hWac_F-u";
+  // Public anon key (safe in a browser). The function keeps JWT verification on and
+  // checks the passcode itself.
+  const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdyZWZibnl5amFkcmV3Z2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTEyMzksImV4cCI6MjEwNzk4NzIzOX0.HV9ldGNRanCUxM2pDjmaP_glp4JUxdwa8cs9LDexhdY";
   const MAX_BYTES = 50 * 1024 * 1024;
   const STORE_KEY = "ll-post-passcode";
 
@@ -241,7 +243,7 @@
   async function call(payload) {
     const res = await fetch(FUNCTION_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: PUBLISHABLE_KEY },
+      headers: { "Content-Type": "application/json", apikey: ANON_KEY, Authorization: "Bearer " + ANON_KEY },
       body: JSON.stringify({ passcode: passEl.value.trim(), ...payload }),
     });
     const data = await res.json().catch(() => ({}));
@@ -257,7 +259,7 @@
       body.append("", f);
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("apikey", PUBLISHABLE_KEY);
+      xhr.setRequestHeader("apikey", ANON_KEY);
       xhr.setRequestHeader("x-upsert", "false");
       xhr.upload.onprogress = (e) => {
         if (!e.lengthComputable) return;
