@@ -73,12 +73,17 @@ mutation CreatePost($input: CreatePostInput!) {
   }
 }`;
 
+// Keep only printable ASCII: a key pasted with a space, line break or invisible
+// character would otherwise make the request header invalid.
+const BUFFER_KEY = (Deno.env.get("BUFFER_API_KEY") || "").replace(/[^\x21-\x7E]/g, "");
+
 async function bufferPost(input: Record<string, unknown>) {
+  if (!BUFFER_KEY) return { ok: false, error: "BUFFER_API_KEY is missing or empty" };
   const res = await fetch("https://api.buffer.com", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${Deno.env.get("BUFFER_API_KEY")}`,
+      Authorization: `Bearer ${BUFFER_KEY}`,
     },
     body: JSON.stringify({ query: CREATE_POST, variables: { input } }),
   });
@@ -101,6 +106,15 @@ function youtubeTitle(caption: string, title?: string) {
 }
 
 Deno.serve(async (req) => {
+  try {
+    return await handle(req);
+  } catch (e) {
+    console.error(e);
+    return json({ error: `Server error: ${e instanceof Error ? e.message : String(e)}` }, 500);
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "Use POST" }, 405);
 
@@ -111,8 +125,8 @@ Deno.serve(async (req) => {
     return json({ error: "Bad request" }, 400);
   }
 
-  const passcode = Deno.env.get("POST_PASSCODE") || "";
-  if (!passcode || !sameString(String(body.passcode || ""), passcode)) {
+  const passcode = (Deno.env.get("POST_PASSCODE") || "").trim();
+  if (!passcode || !sameString(String(body.passcode || "").trim(), passcode)) {
     await new Promise((r) => setTimeout(r, 1500));
     return json({ error: "wrong_passcode" }, 401);
   }
@@ -167,4 +181,4 @@ Deno.serve(async (req) => {
   }
 
   return json({ error: "Unknown action" }, 400);
-});
+}

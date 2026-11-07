@@ -241,11 +241,16 @@
   passEl.addEventListener("input", () => { $("lockMsg").textContent = ""; refresh(); });
 
   async function call(payload) {
-    const res = await fetch(FUNCTION_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: ANON_KEY, Authorization: "Bearer " + ANON_KEY },
-      body: JSON.stringify({ passcode: passEl.value.trim(), ...payload }),
-    });
+    let res;
+    try {
+      res = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: ANON_KEY, Authorization: "Bearer " + ANON_KEY },
+        body: JSON.stringify({ passcode: passEl.value.trim(), ...payload }),
+      });
+    } catch (_) {
+      throw new Error("連不上發片伺服器，請檢查網路後再試一次");
+    }
     const data = await res.json().catch(() => ({}));
     if (res.status === 401) throw Object.assign(new Error("密碼不對"), { code: "pass" });
     if (!res.ok) throw new Error(data.error || "伺服器錯誤 " + res.status);
